@@ -328,10 +328,9 @@ class Tracking :
 #                       main Function 
 #------------------------------------------------------------
 
-Trk = Tracking()
 
 # 트래킹 오브젝트
-def track_object( Trk, objs, labels):                       # 오브젝트를 판별하고, 발견하면 사람을 따라감
+def track_object(Trk, objs, labels):                       # 오브젝트를 판별하고, 발견하면 사람을 따라감
     # global x_deviation, y_max, x_min, x_max, stop_range, arr_track_data, Stop_flag
     
     # if(len(objs)==0):                                      # GPIO 모터 정지
@@ -381,6 +380,8 @@ def track_object( Trk, objs, labels):                       # 오브젝트를 �
 def tracking():                                             # Main Tracking Function
     interpreter, labels = cm.load_model(model_dir, model, label) # 모델 불러오기
     
+    Trk = Tracking()                            # Tracking 클래스 객체
+    
     arr_duration=[0,0,0]                        # [컨버트, 추론, 미리보기] 하는데 걸리는 시간
     while True:
         start_time=time.time()                  # 시작 시간 계산 필요한가?
@@ -412,7 +413,7 @@ def tracking():                                             # Main Tracking Func
         time_preview=time.time()
         #im = cv2.flip(im, 0)                           # 상하 반전
 
-        track_object(objs, labels)                      # 로봇을 움직이는 함수
+        track_object(Trk, objs, labels)                      # 로봇을 움직이는 함수
 
         if keyboard.is_pressed("q"):                    # 종료방법
             break
