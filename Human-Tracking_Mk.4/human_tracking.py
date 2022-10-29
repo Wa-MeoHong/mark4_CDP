@@ -268,6 +268,7 @@ class Tracking :
     """
 
     def move_robot_servo(self):                             # 서보모터 동작 함수 ( 불러오는 함수 )
+        global arr_track_data
         x_dot = self.x_deviation
 
         # Stop_flag = 1 은 전진상태, 즉, 정회전
