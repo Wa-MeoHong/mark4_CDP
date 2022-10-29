@@ -331,7 +331,7 @@ class Tracking :
 
 # 트래킹 오브젝트
 def track_object(Trk, objs, labels):                       # 오브젝트를 판별하고, 발견하면 사람을 따라감
-    # global x_deviation, y_max, x_min, x_max, stop_range, arr_track_data, Stop_flag
+    global arr_track_data
     
     # if(len(objs)==0):                                      # GPIO 모터 정지
     #     print("no objects to trace")
