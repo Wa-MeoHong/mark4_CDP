@@ -320,7 +320,7 @@ class Tracking :
             else:
                 self.Servo_state = 0
                 cmd = "center"
-                self.tl.init()
+                self.tl.inits()
                 time.sleep(delay)
     
 
