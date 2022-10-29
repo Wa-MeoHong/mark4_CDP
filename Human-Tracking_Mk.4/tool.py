@@ -125,7 +125,7 @@ class Motor :
             4. init() : 중앙이 가도록 서보모터 조정
     """
     def setangle(self, angle):
-        self.p = ChangeDutyCycle(angle)
+        self.p.ChangeDutyCycle(angle)
     def left(self, Semiflag):
         if (self.flagleft != 1):
             self.flagleft = 1
