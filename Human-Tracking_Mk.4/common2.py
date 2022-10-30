@@ -211,7 +211,8 @@ def draw_overlays(cv2_im, objs, labels, arr_dur, arr_track_data, stop_range1):
     elif(cmd=='revise'):
         str1='Revise'
     else:
-        str1='something wrong'
+        str1=cmd
+        '''something wrong'''
     cv2_im = cv2.putText(cv2_im, str1, (width-140, 18),font, 0.7, (0, 255, 255), 2)
 
 

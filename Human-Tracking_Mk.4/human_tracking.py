@@ -88,11 +88,12 @@ class Tracking :
 
         # 화면의 좌표값들 
         self.y_max = 0
+        self.y_min = 0
         self.x_min = 0
         self.x_max = 0
         self.x_deviation = 0                              # x축에서 얼마나 떨어져있는지 확인할 변수
 
-        self.tl = Motor(servopin)                         # 처음 객체를 생성하게 되면 Motor를 init을 한다. 
+        self.tl = Motor()                         # 처음 객체를 생성하게 되면 Motor를 init을 한다. 
         self.tl.inits()
 
     # 타겟을 찾음 ( 두개 이상의 타겟 중 하나를 선정)
@@ -242,13 +243,16 @@ class Tracking :
             self.tl.backward()
         # Stop range (정지 범위에 있다면)
         else:   
-            self.BLDC_state = 0
-            self.tl.stop()
+            # self.BLDC_state = 0
+            # self.tl.stop()
             if((self.x_deviation > stop_range) or (self.x_deviation < -(stop_range))):
                 cmd = "revise"
                 self.BLDC_state = 2
                 self.tl.backward()                       # BLDC_state = 2, backward   
-
+            else:
+                cmd = "stop"
+                self.BLDC_state = 0
+                self.tl.stop()
 
     """
     2) 서보모터를 움직이는 쓰레드
@@ -275,21 +279,22 @@ class Tracking :
         if (self.Stop_flag == 1):
             # 얼마나 각도를 조정해야하는지 Semiflag를 설정함
             self.CheckSemiangle(x_dot)
-            self.SetServo(x_dot)   
+            self.SetServo(x_dot, cmd)   
 
         # Stop_flag = 0 은 정지상태, 역회전
         elif (self.Stop_flag == 0):
             self.CheckSemiangle((-1*x_dot))
-            self.SetServo((-1*x_dot)) 
+            self.SetServo((-1*x_dot), cmd) 
 
         # Stop_flag = 2 은 후진상태, 무조건 중앙으로 와야됨
         else:
             self.Servo_state = 0
             cmd = "center"
-            self.tl.init()
-            time.sleep(delay)
+            self.tl.inits()
+            # time.sleep(delay)
         
         arr_track_data[5]=cmd
+        
     def CheckSemiangle(self, x_dot):                        # 각도를 얼만큼 조절할 지 Semiflag를 조정하는함수
         if ((x_dot > (stop_range / 2)) or (x_dot < -(stop_range / 2))):
             if ((x_dot > (stop_range * 2)) or (x_dot < -(stop_range * 2))):
@@ -302,36 +307,37 @@ class Tracking :
                 self.Semiflag = 3
         else:
             self.Semiflag = 4
-    def SetServo(self, x_dot):                              # 서보모터 동작 결정 함수
+    def SetServo(self, x_dot, cmd):                              # 서보모터 동작 결정 함수
         # 좌회전
             if ((x_dot > (stop_range / 2))):
                 self.Servo_state = 1
                 cmd = "left"
                 self.tl.left(self.Semiflag)               # 대입
-                time.sleep(delay)
+                # time.sleep(delay)
 
             # 우회전
             elif ((x_dot< -(stop_range / 2))):
                 self.Servo_state = 2
                 cmd = "right"
                 self.tl.right(self.Semiflag)
-                time.sleep(delay)
+                # time.sleep(delay)
             
             # 중앙
             else:
                 self.Servo_state = 0
                 cmd = "center"
                 self.tl.inits()
-                time.sleep(delay)
+                # time.sleep(delay)
     
 
 #------------------------------------------------------------
 #                       main Function 
 #------------------------------------------------------------
 
+Trk = Tracking()
 
 # 트래킹 오브젝트
-def track_object(Trk, objs, labels):                       # 오브젝트를 판별하고, 발견하면 사람을 따라감
+def track_object( objs, labels):                       # 오브젝트를 판별하고, 발견하면 사람을 따라감
     global arr_track_data
     
     # if(len(objs)==0):                                      # GPIO 모터 정지
@@ -354,14 +360,14 @@ def track_object(Trk, objs, labels):                       # 오브젝트를 판
         return                                              # 리턴으로 탈출
     
     targetBoxData = Trk.resetPerson(objs, labels)
-    x_min, y_min, x_max, y_max = targetBoxData
-    x_center = round((x_min + (x_max - x_min)/2), 3)            # 물제의 가로 중앙
-    y_center = round((y_min + (y_max - y_min)/2), 3)            # 물체의 세로 중앙 =  (아래쪽 변 + 중심까지의 거리)
-    x_deviation = round(0.5 - x_center, 3)                      # x축으로 부터 떨어진 거리
+    Trk.x_min, Trk.y_min, Trk.x_max, Trk.y_max = targetBoxData
+    x_center = round((Trk.x_min + (Trk.x_max - Trk.x_min)/2), 3)            # 물제의 가로 중앙
+    y_center = round((Trk.y_min + (Trk.y_max - Trk.y_min)/2), 3)            # 물체의 세로 중앙 =  (아래쪽 변 + 중심까지의 거리)
+    Trk.x_deviation = round(0.5 - x_center, 3)                      # x축으로 부터 떨어진 거리
     
-    x_right = 1-x_max
+    x_right = 1-Trk.x_max
     print("right = ", x_right)
-    x_left = 1-x_min
+    x_left = 1-Trk.x_min
     print("left = ", x_left)
 
     print ("Stop_Flag = ", Trk.Stop_flag)
@@ -375,13 +381,11 @@ def track_object(Trk, objs, labels):                       # 오브젝트를 판
 
     arr_track_data[0]=x_center
     arr_track_data[1]=y_center
-    arr_track_data[2]=x_deviation
+    arr_track_data[2]=Trk.x_deviation
 
 #---------------------------------메인-----------------------------------------------
 def tracking():                                             # Main Tracking Function
     interpreter, labels = cm.load_model(model_dir, model, label) # 모델 불러오기
-    
-    Trk = Tracking()                            # Tracking 클래스 객체
     
     arr_duration=[0,0,0]                        # [컨버트, 추론, 미리보기] 하는데 걸리는 시간
     while True:
@@ -414,19 +418,19 @@ def tracking():                                             # Main Tracking Func
         time_preview=time.time()
         #im = cv2.flip(im, 0)                           # 상하 반전
 
-        track_object(Trk, objs, labels)                      # 로봇을 움직이는 함수
+        track_object(objs, labels)                      # 로봇을 움직이는 함수
 
-        if keyboard.is_pressed("q"):                    # 종료방법
-            break
-
-        # if cv2.waitKey(1) & 0xFF == ord('q'):           # 종료방법
+        # if (keyboard.is_pressed("q")):                    # 종료방법
         #     break
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):           # 종료방법
+            break
 
 
         # 스크린 보여주기
         # cv2.imshow('Preview', im)
-        # im = cm.draw_overlays(im, objs, labels, arr_duration, arr_track_data, stop_range) 
-        # cv2.imshow('Preview', im)
+        im = cm.draw_overlays(im, objs, labels, arr_duration, arr_track_data, stop_range) 
+        cv2.imshow('Preview', im)
         # thread3 = Thread(target=fc.BomiFace)
         # thread3.start()
 
