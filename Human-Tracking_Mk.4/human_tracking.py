@@ -91,10 +91,10 @@ class Tracking :
         self.y_min = 0
         self.x_min = 0
         self.x_max = 0
-        self.x_deviation = 0                              # x축에서 얼마나 떨어져있는지 확인할 변수
+        self.x_deviation = 0                            # x축에서 얼마나 떨어져있는지 확인할 변수
 
-        self.tl = Motor()                         # 처음 객체를 생성하게 되면 Motor를 init을 한다. 
-        self.tl.inits()
+        self.tl = Motor()                               # 처음 객체를 생성하게 되면 Motor를 init을 한다. 
+        self.tl.inits()                                 # 서보모터의 방향을 중앙으로 돌린다.
 
     # 타겟을 찾음 ( 두개 이상의 타겟 중 하나를 선정)
     def find_target(self, obj, tempFlag):                                 
@@ -291,10 +291,8 @@ class Tracking :
             self.Servo_state = 0
             cmd = "center"
             self.tl.inits()
-            # time.sleep(delay)
         
         arr_track_data[5]=cmd
-        
     def CheckSemiangle(self, x_dot):                        # 각도를 얼만큼 조절할 지 Semiflag를 조정하는함수
         if ((x_dot > (stop_range / 2)) or (x_dot < -(stop_range / 2))):
             if ((x_dot > (stop_range * 2)) or (x_dot < -(stop_range * 2))):
@@ -327,7 +325,7 @@ class Tracking :
                 self.Servo_state = 0
                 cmd = "center"
                 self.tl.inits()
-                # time.sleep(delay)
+            
     
 
 #------------------------------------------------------------
@@ -384,7 +382,7 @@ def track_object( objs, labels):                       # 오브젝트를 판별�
     arr_track_data[2]=Trk.x_deviation
 
 #---------------------------------메인-----------------------------------------------
-def tracking():                                             # Main Tracking Function
+def tracking():                                        # Main Tracking Function
     interpreter, labels = cm.load_model(model_dir, model, label) # 모델 불러오기
     
     arr_duration=[0,0,0]                        # [컨버트, 추론, 미리보기] 하는데 걸리는 시간
