@@ -69,7 +69,8 @@ stop_range = 0.18                               # 움직임이 시작되는 최�
     
     #cmd
 cmd = ""
-    
+cmd2 = ""
+
     #딜레이
 delay = 0.5
     # 트랙 주소 데이터 
@@ -272,27 +273,27 @@ class Tracking :
     """
 
     def move_robot_servo(self):                             # 서보모터 동작 함수 ( 불러오는 함수 )
-        global arr_track_data
+        global arr_track_data, cmd2
         x_dot = self.x_deviation
 
         # Stop_flag = 1 은 전진상태, 즉, 정회전
         if (self.Stop_flag == 1):
             # 얼마나 각도를 조정해야하는지 Semiflag를 설정함
             self.CheckSemiangle(x_dot)
-            self.SetServo(x_dot, cmd)   
+            self.SetServo(x_dot, cmd2)   
 
         # Stop_flag = 0 은 정지상태, 역회전
         elif (self.Stop_flag == 0):
             self.CheckSemiangle((-1*x_dot))
-            self.SetServo((-1*x_dot), cmd) 
+            self.SetServo((-1*x_dot), cmd2) 
 
         # Stop_flag = 2 은 후진상태, 무조건 중앙으로 와야됨
         else:
             self.Servo_state = 0
-            cmd = "center"
+            cmd2 = "center"
             self.tl.inits()
         
-        arr_track_data[5]=cmd
+        arr_track_data[5]=cmd2
     def CheckSemiangle(self, x_dot):                        # 각도를 얼만큼 조절할 지 Semiflag를 조정하는함수
         if ((x_dot > (stop_range / 2)) or (x_dot < -(stop_range / 2))):
             if ((x_dot > (stop_range * 2)) or (x_dot < -(stop_range * 2))):
